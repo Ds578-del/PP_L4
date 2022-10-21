@@ -1,0 +1,654 @@
+openapi: 3.0.3
+info:
+  title: Swagger Wallet - OpenAPI 3.0
+  description: |-
+    This is an API for a Wallet application.
+  version: 1.0.1
+tags:
+  - name: user
+    description: Operations with users
+  - name: wallet
+    description: Operations with wallets
+paths:
+
+  /user:
+    post:
+      tags:
+        - user
+      summary: Create user
+      description: This can only be done by the logged in user.
+      operationId: createUser
+      requestBody:
+        description: Created user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        default:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+     
+  
+  /user/login:
+    get:
+      tags:
+        - user
+      summary: Logs user into the system
+      description: ''
+      operationId: loginUser
+      parameters:
+        - name: username
+          in: query
+          description: The user name for login
+          required: false
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: The password for login in clear text
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/xml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: Invalid username/password supplied
+      
+  /user/logout:
+    get:
+      tags:
+        - user
+      summary: Logs out current logged in user session
+      description: ''
+      operationId: logoutUser
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/xml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: Invalid username/password supplied
+      security:
+        - wallet_auth:
+          - admin
+          - manager
+          - customer
+  /user/{username}:
+    get:
+      tags:
+        - user
+      summary: Get user by user name
+      description: ''
+      operationId: getUserByName
+      parameters:
+        - name: username
+          in: path
+          description: 'The name that needs to be fetched.'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+      security:
+        - wallet_auth:
+          - admin
+          - manager
+          - customer
+    put:
+      tags:
+        - user
+      summary: Update user
+      description: This can  be done by the logged in user or an administrator.
+      operationId: updateUser
+      parameters:
+        - name: username
+          in: path
+          description: name that need to be deleted
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update an existent user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        default:
+          description: successful operation
+        '400':
+          description: Invalid data supplied
+        '404':
+          description: User not found  
+      security:
+        - wallet_auth:
+          - admin
+          - manager
+          - customer
+    delete:
+      tags:
+        - user
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUser
+      parameters:
+        - name: username
+          in: path
+          description: The name that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+      security:
+        - wallet_auth:
+          - admin
+          - manager
+          - customer
+  /user/wallet:
+    get:
+      tags:
+        - user
+      summary: Get wallet of logged in user 
+      description: 'Return wallet that logged in user owns'
+      operationId: getWalletByName
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Wallet'          
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Wallet'
+                xml:
+                  name: wallets_array
+        '400':
+          description: User is not logged in
+        '404':
+          description: Wallet not found
+      security:
+        - wallet_auth:
+          - admin
+          - manager
+          - customer
+ 
+          
+ 
+  /wallet:
+    put:
+      tags:
+        - wallet
+      summary: Update an existing wallet
+      description: Update an existing wallet by Id
+      operationId: updateWallet
+      requestBody:
+        description: Update an existent wallet
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletUpd'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/WalletUpd'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WalletUpd'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Wallet not found
+        '405':
+          description: Validation exception
+      security:
+        - wallet_auth:
+            - write:wallets
+            - read:wallets
+    post:
+      tags:
+        - wallet
+      summary: Add a new wallet
+      description: Add a new wallet
+      operationId: addWallet
+      requestBody:
+        description: Create a new wallet
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Wallet'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Wallet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Wallet'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+        '405':
+          description: Invalid input
+      security:
+        - wallet_auth:
+            - write:wallets
+            - read:wallets
+  
+ 
+  /wallet/{walletId}:
+    get:
+      tags:
+        - wallet
+      summary: Find wallet by ID
+      description: Returns a single wallet
+      operationId: getWalletById
+      parameters:
+        - name: walletId
+          in: path
+          description: ID of wallet to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Wallet not found
+      security:
+        - api_key: []
+        - wallet_auth:
+            - write:wallets
+            - read:wallets
+            
+            
+            
+    delete:
+      tags:
+        - wallet
+      summary: Deletes a wallet
+      description: delete a wallet
+      operationId: deleteWallet
+      parameters:
+        - name: api_key
+          in: header
+          description: ''
+          required: false
+          schema:
+            type: string
+        - name: walletId
+          in: path
+          description: Wallet id to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid wallet value
+      security:
+        - wallet_auth:
+            - write:wallets
+            - read:wallets
+  /transaction/make-transaction:     
+    post:
+      tags:
+        - transaction
+      summary: Create a transaction
+      description: Create a transaction
+      operationId: createTransaction
+      requestBody:
+        description: Do a transaction between a pair of wallets
+        required: true
+        content:
+          application/json:
+                  schema:
+                    $ref: '#/components/schemas/Transaction' 
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionInfo'
+        '404':
+          description: Wallet/s not found        
+        '405':
+          description: Invalid input
+        '406':
+          description: Currency does not match
+        '407':
+          description: Insufficient funds  
+      security:
+      - wallet_auth:
+        - user
+ 
+  /transaction/{walletId}: 
+    get:
+      tags:
+        - transaction
+      summary: List of transactions
+      description: ''
+      operationId: TransactionInfo
+      parameters:
+        - name: walletId
+          in: path
+          description: 'The ID of wallet that needs to be returned.'
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                    $ref: '#/components/schemas/TransactionInfo'          
+        '400':
+          description: Invalid id supplied
+        '404':
+          description: Transaction not found
+      security:
+      - wallet_auth:
+        - user
+components:
+  schemas:
+    User:
+      required:
+        - id
+        - username
+        - email
+        - password
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        username:
+          type: string
+          example: theUser
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: James
+        email:
+          type: string
+          example: john@email.com
+        password:
+          type: string
+          example: '12345'
+        phone:
+          type: string
+          example: '12345'
+      xml:
+        name: user
+
+
+    TransactionInfo:
+      required:
+        - id
+        - wallet_id_1
+        - wallet_id_2
+        - date_time
+        - amount_of_money
+        - currency
+        
+      type: object
+      properties:
+        id:
+            type: integer
+            format: int64
+            example: 1
+        wallet_id_1:
+            type: integer
+            format: int64
+            example: 321
+        wallet_id_2:
+            type: integer
+            format: int64
+            example: 456
+        date_time:
+          type: string
+          format: date
+          example: '2022-10-16|18:05:30.519247'
+        amount_of_money:
+          type: integer
+          format: int64
+          example: 80
+        transaction_description:
+          type: string
+          format: text
+          example: 'Payment for order #302594'
+      xml:
+        name: transfer_info
+ 
+    Transaction:
+      required:
+        - wallet_id_1
+        - wallet_id_2
+        - amount_of_money
+        - currency
+      type: object
+      properties:
+        wallet_id_1:
+            type: integer
+            format: int64
+            example: 321
+        wallet_id_2:
+            type: integer
+            format: int64
+            example: 456
+        amount_of_money:
+          type: integer
+          format: int64
+          example: 2000 
+        currency:
+          type: integer
+          format: int64
+          example: 32  
+      xml:
+        name: transfer_operation
+
+    Wallet:
+      required:
+        - id
+        - userId
+        - currency
+        - date
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 2
+        userId:
+          type: integer
+          format: int64
+          example: 8
+        balance:
+          type: integer
+          format: int64
+          example: 80
+        currency:
+          type: integer
+          format: int64
+          example: 32
+        creation_date:
+          type: string
+          format: date
+          example: 2021-08-24
+        info:
+          type: string
+          format: text
+          example: 'Additional info'
+      xml:
+        name: ticket
+    
+    WalletUpd:
+      required:
+        - currency
+        - date
+      type: object
+      properties:
+        currency:
+          type: integer
+          format: int64
+          example: 32
+        info:
+          type: string
+          format: text
+          example: 'Additional info'
+      xml:
+        name: ticket
+    
+    
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+      xml:
+        name: '##default'
+        
+  requestBodies:
+    Ticket:
+      description: Wallet object
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Wallet'
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/Wallet'
+    
+  securitySchemes:
+    wallet_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: url
+          scopes:
+            admin : can do all actions
+            manager : can manage wallets
+            user : can transfer funds from own wallet, change own profile and see info about wallets they own
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
