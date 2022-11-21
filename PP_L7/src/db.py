@@ -4,8 +4,6 @@ from sqlalchemy.ext.declarative import declarative_base
 import configparser
 import pathlib
 
-
-
 #  f'postgresql://username:password@domain_name:port/database_name'
 
 file_config = pathlib.Path(__file__).parent.parent.joinpath('config.ini')
@@ -22,5 +20,3 @@ Base = declarative_base()
 engine = create_engine(url, echo=True, pool_size=5)
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
-
-

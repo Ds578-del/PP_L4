@@ -1,59 +1,56 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, Table
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship, backref
+from sqlalchemy import *
 
-from src.db import Base
+Base = declarative_base()
 
-# association_table = Table(
-#     "association_table",
-#     Base.metadata,
-#     Column("left_id", ForeignKey("users.id")),
-#     Column("right_id", ForeignKey("fbudget.fbudget_id")),
-# )
-class users_of_budget(Base):
-    __tablename__ = 'u_o_b'
-    id = Column(Integer, primary_key=True)
-    user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    user = relationship('User', back_populates='fbudget')
-    fbudget_id = Column('fbudget_id', ForeignKey('fbudget.fbudget_id', ondelete='CASCADE'), nullable=False)
-    fbudget = relationship('FBudget', back_populates='users')
 
-class User(Base):
+class FamilyBudgets(Base):
+    __tablename__ = 'family_budgets'
+    id = Column(Integer,
+                Identity(always=True, start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1),
+                primary_key=True, nullable=False)
+    money_amount = Column(BigInteger, nullable=False, default=0)
+    familyBudgetUsers_child = relationship("FamilyBudgetsUsers", cascade="all,delete",
+                                           backref="familyBudgetUsers_parent_familyBudget")
+
+
+class Users(Base):
     __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    email = Column('email', String(100), nullable=False)
-    password = Column(String(255), nullable=False)
-    first_name = Column(String(120), nullable=True)
-    last_name = Column(String(120), nullable=True)
-    pbudget=relationship("PBudget", back_populates="user")
-    fbudget = relationship("users_of_budget", back_populates="user")
+    id = Column(Integer,
+                Identity(always=True, start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1),
+                primary_key=True, nullable=False)
+    surname = Column(String(40), nullable=False)
+    name = Column(String(40), nullable=False)
+    username = Column(String(40), nullable=False, unique=True)
+    password = Column(String(256), nullable=False)
+    personalBudget_child = relationship("PersonalBudgets", cascade="all,delete", backref="personalBudget_parent_user")
+    familyBudgetUsers_child = relationship("FamilyBudgetsUsers", cascade="all,delete",
+                                           backref="familyBudgetUsers_parent_user")
 
 
-class PBudget(Base):
-    __tablename__ = 'pbudget'
-    pbudget_id = Column(Integer, primary_key=True)
-    balance = Column(Integer, nullable=False)
-    income = Column(Integer, nullable=False)
-    costs = Column(Integer, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship("User", back_populates="pbudget")
-    transfer = relationship('Transfer', back_populates='pbudget')
+class PersonalBudgets(Base):
+    __tablename__ = "personal_budgets"
+    id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+    money_amount = Column(BigInteger, nullable=False, default=0)
 
-class FBudget(Base):
-    __tablename__ = 'fbudget'
-    fbudget_id = Column(Integer, primary_key=True)
-    balance = Column(Integer, nullable=False)
-    income = Column(Integer, nullable=False)
-    costs = Column(Integer, nullable=False)
-    date = Column(Date, nullable=True)
-    users = relationship('users_of_budget', back_populates='fbudget')
-    transfer = relationship('Transfer', back_populates='fbudget')
 
-class Transfer(Base):
-    __tablename__ = 'transfers'
-    id = Column(Integer, primary_key=True)
-    amount = Column(Integer, nullable=False)
-    addatetimedress = Column(Date, nullable=False)
-    pbudget_id = Column('pbudget_id', ForeignKey('pbudget.pbudget_id', ondelete='CASCADE'), nullable=False)
-    pbudget = relationship('PBudget', back_populates='transfer')
-    fbudget_id = Column('fbudget_id', ForeignKey('fbudget.fbudget_id', ondelete='CASCADE'), nullable=False)
-    fbudget = relationship('FBudget', back_populates='transfer')
+class FamilyBudgetsUsers(Base):
+    __tablename__ = 'family_budgets_users'
+    id = Column(Integer,
+                Identity(always=True, start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1),
+                primary_key=True, nullable=False)
+    family_budget_id = Column(Integer, ForeignKey('family_budgets.id', ondelete='CASCADE'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+
+
+class Operation(Base):
+    __tablename__ = 'operations'
+    id = Column(Integer,
+                Identity(always=True, start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1),
+                primary_key=True, nullable=False)
+    sender_id = Column(Integer, nullable=False)
+    receiver_id = Column(Integer, nullable=False)
+    sender_type = Column(String(40), nullable=False)
+    receiver_type = Column(String(40), nullable=False)
+    money_amount = Column(BigInteger, nullable=False)
+    date = Column(DateTime, nullable=False)
